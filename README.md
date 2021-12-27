@@ -102,6 +102,11 @@ Assim que ele iniciar ele vai começar mandando os bonecos trabalhar. Para que e
 Ele vai constantemente checar se você foi desconectado para realizar o login novamente, e se o botão “new map” tá na tela para clicar nele.
 A cada 15 minutos ele manda todos os heróis taralharem.
 
+
+# Usando docker:
+para rodar bastar ter docker e docker compose instalado e ajustar o - VNC_PASSWORD=COLOCARUMASENHAAQUI. depois docker-compose up -d --build essa image já tem o vnc instalado entao depois que ela rodar entre com o vnc no 127.0.0.1:5900 ,
+tambem é possivel por http http://127.0.0.1:6080 e user root e senha que colocou no docker-compose.
+
 # Send home feature:
 
 ## How to use it:
