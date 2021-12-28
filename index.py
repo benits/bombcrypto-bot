@@ -296,18 +296,23 @@ def clickFullBarButtons():
         pyautogui.click()
         global hero_clicks
         hero_clicks = hero_clicks + 1
-
     return len(not_working_full_bars)
 
 
 def goToHeroes():
-    if clickBtn(images['go-back-arrow']):
-        global login_attempts
-        login_attempts = 0
+    select_one = randint(1, 2)
+    global login_attempts
 
-    # TODO tirar o sleep quando colocar o pulling
-    time.sleep(1)
-    clickBtn(images['hero-icon'])
+    if select_one == 1:
+        if clickBtn(images['go-back-arrow']):
+            login_attempts = 0
+            time.sleep(1)
+            clickBtn(images['hero-icon'])
+    else:
+        if clickBtn(images['up-arrow']):
+            login_attempts = 0
+            time.sleep(1)
+            clickBtn(images['hero-icon-inside-teasure-hunt'])
     time.sleep(randint(1, 3))
 
 
@@ -316,6 +321,10 @@ def goToGame():
     clickBtn(images['x'])
     # time.sleep(3)
     clickBtn(images['x'])
+
+    clickBtn(images['down-arrow'])
+
+    clickBtn(images['down-arrow'])
 
     clickBtn(images['treasure-hunt-icon'])
 
