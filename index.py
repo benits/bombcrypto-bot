@@ -548,6 +548,8 @@ def main():
         bot.send_message(c["telegram_chat_id"],
                          "BOMBCRYPTO " + account_id + " started")
 
+    login()
+
     time.sleep(3)
 
     while True:
