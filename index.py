@@ -314,16 +314,17 @@ def goToHeroes():
     select_one = randint(1, 2)
     global login_attempts
 
-    if select_one == 1:
-        if clickBtn(images['go-back-arrow']):
-            login_attempts = 0
-            time.sleep(1)
-            clickBtn(images['hero-icon'])
-    else:
+    if select_one == 1 and clickBtn(images['up-arrow']):
         if clickBtn(images['up-arrow']):
             login_attempts = 0
             time.sleep(1)
             clickBtn(images['hero-icon-inside-teasure-hunt'])
+    else:
+        if clickBtn(images['go-back-arrow']) or clickBtn(images['hero-icon']):
+            login_attempts = 0
+            time.sleep(1)
+            clickBtn(images['hero-icon'])
+
     time.sleep(randint(1, 3))
 
 
