@@ -10,3 +10,5 @@ PyRect==0.1.4
 PyScreeze==0.1.28
 pytweening==1.0.4
 PyYAML==6.0
+Pillow==8.4.0
+pyTelegramBotAPI==4.2.2

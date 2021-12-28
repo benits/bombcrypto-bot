@@ -11,6 +11,9 @@ import time
 import sys
 import yaml
 
+import telebot
+
+
 # Load config file.
 stream = open("config.yaml", 'r')
 c = yaml.safe_load(stream)
@@ -18,6 +21,9 @@ ct = c['threshold']
 ch = c['home']
 pause = c['time_intervals']['interval_between_moviments']
 pyautogui.PAUSE = pause
+
+bot = telebot.TeleBot(c["telegram_token"])
+account_id = '#' + str(c['accountid'])
 
 cat = """
                                                 _
@@ -208,11 +214,13 @@ def scroll():
 def clickButtons():
     buttons = positions(images['go-work'], threshold=ct['go_to_work_btn'])
     # print('buttons: {}'.format(len(buttons)))
+    global hero_clicks
+
     for (x, y, w, h) in buttons:
         moveToWithRandomness(x+(w/2), y+(h/2), 1)
         pyautogui.click()
-        global hero_clicks
-        hero_clicks = hero_clicks + 1
+
+        hero_clicks += 1
         #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
         if hero_clicks > 20:
             logger('too many hero clicks, try to increase the go_to_work_btn threshold')
@@ -262,13 +270,14 @@ def clickGreenBarButtons():
         logger('👆 Clicking in %d heroes' % len(not_working_green_bars))
 
     # se tiver botao com y maior que bar y-10 e menor que y+10
+    global hero_clicks
     hero_clicks_cnt = 0
+
     for (x, y, w, h) in not_working_green_bars:
         # isWorking(y, buttons)
         moveToWithRandomness(x+offset+(w/2), y+(h/2), 1)
         pyautogui.click()
-        global hero_clicks
-        hero_clicks = hero_clicks + 1
+        hero_clicks += 1
         hero_clicks_cnt = hero_clicks_cnt + 1
         if hero_clicks_cnt > 20:
             logger(
@@ -291,11 +300,13 @@ def clickFullBarButtons():
     if len(not_working_full_bars) > 0:
         logger('👆 Clicking in %d heroes' % len(not_working_full_bars))
 
+    global hero_clicks
+
     for (x, y, w, h) in not_working_full_bars:
         moveToWithRandomness(x+offset+(w/2), y+(h/2), 1)
         pyautogui.click()
-        global hero_clicks
-        hero_clicks = hero_clicks + 1
+
+        hero_clicks += 1
     return len(not_working_full_bars)
 
 
@@ -462,7 +473,38 @@ def refreshHeroes():
         time.sleep(2)
 
     logger('💪 {} heroes sent to work'.format(hero_clicks))
+
+    if(c["log_telegram"] == True):
+        bot.send_message(c["telegram_chat_id"], "BOMBCRYPTO " +
+                         account_id + " AMOUNT HEROES SENDED {} TO WORK".format(hero_clicks))
+
     goToGame()
+
+
+def takeScreenshot():
+    logger('\n Taking screenshot')
+    myScreenshot = pyautogui.screenshot()
+    myScreenshot.save(r'screen.png')
+    photo = open('screen.png', 'rb')
+    if(c["log_telegram"] == True):
+        bot.send_message(c["telegram_chat_id"],
+                         "BOMBCRYPTO " + account_id + " screenshot")
+        bot.send_photo(c["telegram_chat_id"], photo)
+
+
+def sendBalance():
+    logger('\n Taking screenshot balance')
+    if clickBtn(images['balance'], timeout=10, threshold=0.6):
+        time.sleep(3)
+        myScreenshot = pyautogui.screenshot()
+        myScreenshot.save(r'screen.png')
+        photo = open('screen.png', 'rb')
+        if(c["log_telegram"] == True):
+            bot.send_message(c["telegram_chat_id"],
+                             "BOMBCRYPTO " + account_id + " BALANCE")
+            bot.send_photo(c["telegram_chat_id"], photo)
+        clickBtn(images['x'])
+        clickBtn(images['x'])
 
 
 def main():
@@ -471,9 +513,11 @@ def main():
     global hero_clicks
     global login_attempts
     global last_log_is_progress
+    global amount_maps_passed
     hero_clicks = 0
     login_attempts = 0
     last_log_is_progress = False
+    amount_maps_passed = 0
 
     global images
     images = load_images()
@@ -494,9 +538,17 @@ def main():
         "heroes": 0,
         "new_map": 0,
         "check_for_captcha": 0,
-        "refresh_heroes": 0
+        "refresh_heroes": 0,
+        "screen": 0,
+        "balance": 0
     }
     # =========
+
+    if(c["log_telegram"] == True):
+        bot.send_message(c["telegram_chat_id"],
+                         "BOMBCRYPTO " + account_id + " started")
+
+    time.sleep(3)
 
     while True:
         now = time.time()
@@ -504,9 +556,20 @@ def main():
         if now - last["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
             last["check_for_captcha"] = now
 
+        if now - last["screen"] > 60 * 60:
+            last["screen"] = now
+            takeScreenshot()
+            logger("\n")
+
+        if now - last["balance"] > 60 * 60:
+            last["balance"] = now
+            sendBalance()
+            logger("\n")
+
         if now - last["heroes"] > addRandomness(t['send_heroes_for_work'] * 60):
             last["heroes"] = now
             refreshHeroes()
+            hero_clicks = 0
 
         if now - last["login"] > addRandomness(t['check_for_login'] * 60):
             sys.stdout.flush()
@@ -517,7 +580,9 @@ def main():
             last["new_map"] = now
 
             if clickBtn(images['new-map']):
-                loggerMapClicked()
+                amount_maps_passed += 1
+                loggerMapClicked(bot, account_id, '🗺️ New Map button clicked! {} maps passed'.format(
+                    amount_maps_passed))
 
         if now - last["refresh_heroes"] > addRandomness(t['refresh_heroes_positions'] * 60):
             last["refresh_heroes"] = now
