@@ -101,6 +101,18 @@ A cada 15 minutos ele manda todos os heróis taralharem.
 para rodar bastar ter docker e docker compose instalado e ajustar o - VNC_PASSWORD=COLOCARUMASENHAAQUI. depois docker-compose up -d --build essa image já tem o vnc instalado entao depois que ela rodar entre com o vnc no 127.0.0.1:5900 ,
 tambem é possivel por http http://127.0.0.1:6080 e user root e senha que colocou no docker-compose.
 
+
+# HOT TO SEND SCREENSHOTS TO TELEGRAM
+
+1. Go to official telegram [BotFather](https://t.me/BotFather/).
+2. Create your bot and copy bot-token (eg. 5021546203:AAHeK199jW25dfvslkOhMzAumzVecSxvVZw )
+3. Open config.yaml in your bot folder and paste bot-token to "telegram_token" 
+4. In config.yaml set "log_telegram" to "True"
+5. Go to [userinfobot](https://t.me/userinfobot) , send "/start" and copy your telegram id
+6. In config.yaml set "telegram_chat_id" to your telegram_id
+7. Go to your telegram bot and send "/start"
+8. Start bot
+
 # Send home feature:
 
 ## How to use it:
