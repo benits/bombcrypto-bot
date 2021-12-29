@@ -196,10 +196,18 @@ def positions(target, threshold=ct['default'], img=None):
 
 
 def scroll():
-
     commoms = positions(images['commom-text'], threshold=ct['commom'])
+
     if (len(commoms) == 0):
-        return
+        commoms = positions(images['rare-text'], threshold=ct['rare'])
+        if (len(commoms) == 0):
+            commoms = positions(
+                images['super_rare-text'], threshold=ct['super_rare'])
+            if (len(commoms) == 0):
+                commoms = positions(images['epic-text'], threshold=ct['epic'])
+                if (len(commoms) == 0):
+                    return
+
     x, y, w, h = commoms[len(commoms)-1]
 #
     moveToWithRandomness(x, y, 1)
@@ -251,7 +259,54 @@ def isWorking(bar, buttons):
     return True
 
 
-def clickGreenBarButtons():
+def isResting(bar, buttons):
+    y = bar[1]
+
+    for (_, button_y, _, button_h) in buttons:
+        isBelow = y < (button_y + button_h)
+        isAbove = y > (button_y - button_h)
+        if isBelow and isAbove:
+            return False
+    return True
+
+
+def discoveryRarity(bar):
+    commoms = positions(images['commom-text'], threshold=ct['commom'])
+    rares = positions(images['rare-text'], threshold=ct['rare'])
+    super_rares = positions(
+        images['super_rare-text'], threshold=ct['super_rare'])
+    epics = positions(images['epic-text'], threshold=ct['epic'])
+
+    y = bar[1]
+
+    for (_, button_y, _, button_h) in commoms:
+        isBelow = y < (button_y + button_h)
+        isAbove = y > (button_y - button_h)
+        if isBelow and isAbove:
+            return 'commom'
+
+    for (_, button_y, _, button_h) in rares:
+        isBelow = y < (button_y + button_h)
+        isAbove = y > (button_y - button_h)
+        if isBelow and isAbove:
+            return 'rare'
+
+    for (_, button_y, _, button_h) in super_rares:
+        isBelow = y < (button_y + button_h)
+        isAbove = y > (button_y - button_h)
+        if isBelow and isAbove:
+            return 'super_rare'
+
+    for (_, button_y, _, button_h) in epics:
+        isBelow = y < (button_y + button_h)
+        isAbove = y > (button_y - button_h)
+        if isBelow and isAbove:
+            return 'epic'
+
+    return 'null'
+
+
+def clickGreenBarButtons(chests):
     # ele clicka nos q tao trabaiano mas axo q n importa
     offset = 140
 
@@ -262,8 +317,17 @@ def clickGreenBarButtons():
 
     not_working_green_bars = []
     for bar in green_bars:
-        if not isWorking(bar, buttons):
+        global deveTrabalhar
+        global raridade
+        raridade = discoveryRarity(bar)
+        deveTrabalhar = 1
+
+        if raridade != 'commom' and (chests >= 60 or chests == 0):
+            deveTrabalhar = 0
+
+        if (not isWorking(bar, buttons)) and deveTrabalhar == 1:
             not_working_green_bars.append(bar)
+
     if len(not_working_green_bars) > 0:
         logger('🆗 %d buttons with green bar detected' %
                len(not_working_green_bars))
@@ -442,10 +506,119 @@ def sendHeroesHome():
             print('hero already home, or home full(no dark home button)')
 
 
+def checkChests():
+    logger('🏢 Search for baus to map')
+
+    purpleChest = positions(images['bau-roxo'], threshold=ct['bau_roxo'])
+    purpleMiddleLifeChest = positions(
+        images['bau-roxo-50'], threshold=ct['bau_roxo_50'])
+    purpleMiddleLessLifeChest = positions(
+        images['bau-roxo-less-50'], threshold=ct['bau_roxo_50'])
+
+    goldChest = positions(images['bau-gold'], threshold=ct['bau_gold'])
+    goldMiddleLifeChest = positions(
+        images['bau-gold-50'], threshold=ct['bau_gold_50'])
+
+    blueChest = positions(images['bau-blue'], threshold=ct['bau_blue'])
+    blueMiddleLifeChest = positions(
+        images['bau-blue-50'], threshold=ct['bau_blue_50'])
+
+    logger('🆗 %d baus roxo detected' % len(purpleChest))
+    logger('🆗 %d baus roxo meia vida detected' % len(purpleMiddleLifeChest))
+
+    logger('🆗 %d baus gold detected' % len(goldChest))
+    logger('🆗 %d baus gold meia vida detected' % len(goldMiddleLifeChest))
+
+    logger('🆗 %d baus blue detected' % len(blueChest))
+    logger('🆗 %d baus blue meia vida detected' % len(blueMiddleLifeChest))
+
+    hasChestsLessMiddleLifes = len(purpleMiddleLessLifeChest) > 0
+
+    hasChestsMiddleLifes = len(purpleMiddleLifeChest) > 0 or len(
+        goldMiddleLifeChest) > 0 or len(blueMiddleLifeChest) > 0 or len(blueMiddleLifeChest) > 0
+
+    hasChestsFullLifes = len(purpleChest) > 0 or len(
+        goldChest) > 0 or len(blueChest) > 0
+
+    global response
+    if (hasChestsMiddleLifes or hasChestsLessMiddleLifes or hasChestsFullLifes):
+        valueChestsLessMiddleLifes = len(purpleMiddleLessLifeChest)
+
+        valueChestsMiddleLifes = len(purpleMiddleLifeChest) + len(
+            goldMiddleLifeChest) + len(blueMiddleLifeChest) + len(blueMiddleLifeChest)
+
+        valueChestsFullLifes = len(purpleChest) + len(
+            goldChest) + len(blueChest)
+
+        response = (
+            (
+                valueChestsLessMiddleLifes
+                + valueChestsMiddleLifes
+                + valueChestsFullLifes
+            ) * 100
+        ) / (len(purpleChest) + len(goldChest) + len(blueChest))
+    else:
+        response = 0
+
+    logger('Response of checkChest {}'.format(response))
+    return response
+
+
+def clickRedBarButtons():
+    # ele clicka nos q tao trabaiano mas axo q n importa
+    offset = 200
+
+    red_bars = positions(images['red-bar'], threshold=ct['red_bar'])
+    logger('🟥 %d red bars detected' % len(red_bars))
+    buttons = positions(images['go-rest'], threshold=ct['go_to_rest_btn'])
+    logger('🔋 %d rest buttons detected' % len(buttons))
+
+    buttons_work = positions(images['go-work'], threshold=ct['go_to_work_btn'])
+
+    not_resting_red_bars = []
+    for bar in red_bars:
+        if (isWorking(bar, buttons_work)):
+            not_resting_red_bars.append(bar)
+
+    if len(not_resting_red_bars) > 0:
+        logger('🔋 %d buttons with red bar detected' %
+               len(not_resting_red_bars))
+        logger('👆 Clicking in %d heroes' % len(not_resting_red_bars))
+
+    # se tiver botao com y maior que bar y-10 e menor que y+10
+    global hero_rest_clicks
+    hero_clicks_cnt = 0
+
+    for (x, y, w, h) in not_resting_red_bars:
+        # isWorking(y, buttons)
+        moveToWithRandomness(x+offset+(w/2), y+(h/2), 1)
+        pyautogui.click()
+        hero_rest_clicks += 1
+        hero_clicks_cnt = hero_clicks_cnt + 1
+        if hero_clicks_cnt > 20:
+            logger(
+                '⚠️ Too many hero clicks, try to increase the go_to_work_btn threshold')
+            return
+        #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
+    return len(not_resting_red_bars)
+    # while (True):
+    #     buttons = positions(images['go-rest'], threshold=ct['go_to_rest_btn'])
+    #     if len(buttons) > 0:
+    #         clickBtn(images['go-rest'])
+    #     else:
+    #         return
+
+
 def refreshHeroes():
     logger('🏢 Search for heroes to work')
 
+    global chests
+    chests = checkChests()
+
     goToHeroes()
+
+    if c['select_heroes_mode'] != "full":
+        logger('⚒️ Sending heroes with red stamina bar to rest', 'red')
 
     if c['select_heroes_mode'] == "full":
         logger('⚒️ Sending heroes with full stamina bar to work', 'green')
@@ -461,11 +634,14 @@ def refreshHeroes():
         if c['select_heroes_mode'] == 'full':
             buttonsClicked = clickFullBarButtons()
         elif c['select_heroes_mode'] == 'green':
-            buttonsClicked = clickGreenBarButtons()
+            buttonsClicked = clickGreenBarButtons(chests)
         else:
             buttonsClicked = clickButtons()
 
         sendHeroesHome()
+
+        if c['select_heroes_mode'] != "full":
+            clickRedBarButtons()
 
         if buttonsClicked == 0:
             empty_scrolls_attempts -= 1
@@ -475,9 +651,15 @@ def refreshHeroes():
 
     logger('💪 {} heroes sent to work'.format(hero_clicks))
 
+    logger('💪 {} heroes sent to work'.format(hero_rest_clicks))
+
     if(c["log_telegram"] == True):
         bot.send_message(c["telegram_chat_id"], "BOMBCRYPTO " +
-                         account_id + " AMOUNT HEROES SENDED {} TO WORK".format(hero_clicks))
+                         account_id + " 💪 AMOUNT HEROES SENDED {} TO WORK".format(hero_clicks))
+
+    if(c["log_telegram"] == True):
+        bot.send_message(c["telegram_chat_id"], "BOMBCRYPTO " +
+                         account_id + " 🔋 AMOUNT HEROES SENDED {} TO  REST".format(hero_rest_clicks))
 
     goToGame()
 
@@ -489,7 +671,7 @@ def takeScreenshot():
     photo = open('screen.png', 'rb')
     if(c["log_telegram"] == True):
         bot.send_message(c["telegram_chat_id"],
-                         "BOMBCRYPTO " + account_id + " screenshot")
+                         "BOMBCRYPTO " + account_id + " 📸 screenshot")
         bot.send_photo(c["telegram_chat_id"], photo)
 
 
@@ -502,7 +684,7 @@ def sendBalance():
         photo = open('screen.png', 'rb')
         if(c["log_telegram"] == True):
             bot.send_message(c["telegram_chat_id"],
-                             "BOMBCRYPTO " + account_id + " BALANCE")
+                             "BOMBCRYPTO " + account_id + " 📈 BALANCE")
             bot.send_photo(c["telegram_chat_id"], photo)
         clickBtn(images['x'])
         clickBtn(images['x'])
@@ -512,10 +694,12 @@ def main():
     """Main execution setup and loop"""
     # ==Setup==
     global hero_clicks
+    global hero_rest_clicks
     global login_attempts
     global last_log_is_progress
     global amount_maps_passed
     hero_clicks = 0
+    hero_rest_clicks = 0
     login_attempts = 0
     last_log_is_progress = False
     amount_maps_passed = 0
@@ -547,7 +731,7 @@ def main():
 
     if(c["log_telegram"] == True):
         bot.send_message(c["telegram_chat_id"],
-                         "BOMBCRYPTO " + account_id + " started")
+                         "BOMBCRYPTO " + account_id + " 🚀 started")
 
     login()
 
@@ -559,6 +743,12 @@ def main():
         if now - last["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
             last["check_for_captcha"] = now
 
+        if now - last["heroes"] > addRandomness(t['send_heroes_for_work'] * 60):
+            last["heroes"] = now
+            refreshHeroes()
+            hero_clicks = 0
+            hero_rest_clicks = 0
+
         if now - last["screen"] > 60 * 60:
             last["screen"] = now
             takeScreenshot()
@@ -568,11 +758,6 @@ def main():
             last["balance"] = now
             sendBalance()
             logger("\n")
-
-        if now - last["heroes"] > addRandomness(t['send_heroes_for_work'] * 60):
-            last["heroes"] = now
-            refreshHeroes()
-            hero_clicks = 0
 
         if now - last["login"] > addRandomness(t['check_for_login'] * 60):
             sys.stdout.flush()
