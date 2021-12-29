@@ -523,14 +523,16 @@ def checkChests():
     blueMiddleLifeChest = positions(
         images['bau-blue-50'], threshold=ct['bau_blue_50'])
 
-    logger('🆗 %d baus roxo detected' % len(purpleChest))
-    logger('🆗 %d baus roxo meia vida detected' % len(purpleMiddleLifeChest))
+    logger('🟪 %d baus roxo detected' % len(purpleChest))
+    logger('🟪 %d baus roxo meia vida detected' % len(purpleMiddleLifeChest))
+    logger('🟪 %d baus roxo menos da metade de vida detected' %
+           len(purpleMiddleLessLifeChest))
 
-    logger('🆗 %d baus gold detected' % len(goldChest))
-    logger('🆗 %d baus gold meia vida detected' % len(goldMiddleLifeChest))
+    logger('🟨 %d baus gold detected' % len(goldChest))
+    logger('🟨 %d baus gold meia vida detected' % len(goldMiddleLifeChest))
 
-    logger('🆗 %d baus blue detected' % len(blueChest))
-    logger('🆗 %d baus blue meia vida detected' % len(blueMiddleLifeChest))
+    logger('🟦 %d baus blue detected' % len(blueChest))
+    logger('🟦 %d baus blue meia vida detected' % len(blueMiddleLifeChest))
 
     hasChestsLessMiddleLifes = len(purpleMiddleLessLifeChest) > 0
 
@@ -631,6 +633,9 @@ def refreshHeroes():
     empty_scrolls_attempts = c['scroll_attemps']
 
     while(empty_scrolls_attempts > 0):
+        if c['select_heroes_mode'] != "full":
+            clickRedBarButtons()
+
         if c['select_heroes_mode'] == 'full':
             buttonsClicked = clickFullBarButtons()
         elif c['select_heroes_mode'] == 'green':
@@ -639,9 +644,6 @@ def refreshHeroes():
             buttonsClicked = clickButtons()
 
         sendHeroesHome()
-
-        if c['select_heroes_mode'] != "full":
-            clickRedBarButtons()
 
         if buttonsClicked == 0:
             empty_scrolls_attempts -= 1
