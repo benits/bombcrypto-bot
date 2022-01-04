@@ -311,14 +311,13 @@ def clickFullBarButtons():
 
 
 def goToHeroes():
-    select_one = randint(1, 2)
+    select_one = 2  # randint(1, 2)
     global login_attempts
 
     if select_one == 1 and clickBtn(images['up-arrow']):
-        if clickBtn(images['up-arrow']):
-            login_attempts = 0
-            time.sleep(1)
-            clickBtn(images['hero-icon-inside-teasure-hunt'])
+        login_attempts = 0
+        time.sleep(1)
+        clickBtn(images['hero-icon-inside-teasure-hunt'])
     else:
         if clickBtn(images['go-back-arrow']) or clickBtn(images['hero-icon']):
             login_attempts = 0
@@ -454,21 +453,19 @@ def refreshHeroes():
     else:
         logger('⚒️ Sending all heroes to work', 'green')
 
-    buttonsClicked = 1
     empty_scrolls_attempts = c['scroll_attemps']
 
     while(empty_scrolls_attempts > 0):
         if c['select_heroes_mode'] == 'full':
-            buttonsClicked = clickFullBarButtons()
+            clickFullBarButtons()
         elif c['select_heroes_mode'] == 'green':
-            buttonsClicked = clickGreenBarButtons()
+            clickGreenBarButtons()
         else:
-            buttonsClicked = clickButtons()
+            clickButtons()
 
         sendHeroesHome()
 
-        if buttonsClicked == 0:
-            empty_scrolls_attempts -= 1
+        empty_scrolls_attempts -= 1
 
         scroll()
         time.sleep(2)
@@ -549,7 +546,7 @@ def main():
         bot.send_message(c["telegram_chat_id"],
                          "BOMBCRYPTO " + account_id + " started")
 
-    login()
+    # login()
 
     time.sleep(3)
 
