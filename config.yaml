@@ -145,7 +145,7 @@ select_heroes_mode: "green"
 # Opções disponíveis: False ou True
 save_log_to_file: True
 
-log_telegram: True # True - enable log to telegram False - disable log to telegram
-telegram_token: "5049057527:AAH_q1_wlvF1TgulSfEod9hXQqwfRGL6_Tc" # Telegram bot token
-telegram_chat_id: "991476363" # Your telegram id , can find it in this telegram bot -  @userinfobot
+log_telegram: False # True - enable log to telegram False - disable log to telegram
+telegram_token: "5049057527:sadasfsdgfsdgfdsgasdfhgsdfsdf6_Tc" # Your Telegram bot token
+telegram_chat_id: "8949169136164" # Your telegram id , can find it in this telegram bot -  @userinfobot
 accountid: 1 # account id for telegram logs
