@@ -9,7 +9,7 @@ time_intervals:
   #
   # [pt_BR] Intervalo de tempo para verificar se há heróis disponíveis para trabalhar
   # Valor padrão (em minutos): 10
-  send_heroes_for_work: 15
+  send_heroes_for_work: 10
 
   # [en_US] Time interval to update heroes position in the map,
   # Default value (in minutes): 3
@@ -23,7 +23,7 @@ time_intervals:
   #
   # [pt_BR] Intervalo de tempo para verificar por novos mapas
   # Valor padrão (em segundos): 5
-  check_for_new_map_button: 4
+  check_for_new_map_button: 2
 
   # [en_US] Time interval to check for captcha.
   # Default value (in minutes): 1
@@ -105,7 +105,7 @@ scroll_size: 60
 #
 # [pt_BR]
 # Valor padrão: 3
-scroll_attemps: 3
+scroll_attemps: 4
 
 # [en_US]
 # Default value: true
