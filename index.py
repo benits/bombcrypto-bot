@@ -322,7 +322,8 @@ def goToHeroes():
         if clickBtn(images['go-back-arrow']) or clickBtn(images['hero-icon']):
             login_attempts = 0
             time.sleep(1)
-            clickBtn(images['hero-icon'])
+
+        clickBtn(images['hero-icon'])
 
     time.sleep(randint(1, 3))
 
