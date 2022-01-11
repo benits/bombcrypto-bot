@@ -84,6 +84,13 @@ threshold:
   #
   # [pt_BR]
   # Valor padrão: 0.9
+  go_all_work_btn: 0.9
+
+  # [en_US]
+  # Default value: 0.9
+  #
+  # [pt_BR]
+  # Valor padrão: 0.9
   green_bar: 0.9
 
 home:
@@ -134,7 +141,7 @@ click_and_drag_amount: 200
 # all   = seleciona todos os heróis (independente da barra de stamina)
 # green = seleciona os heróis com a barra de stamina verde (metade ou cheia)
 # full  = seleciona somente os heróis com a barra de stamina cheia
-select_heroes_mode: "green"
+select_heroes_mode: "all"
 
 # [en_US] Option for save logs to a file (logs.txt)
 # Default value: False

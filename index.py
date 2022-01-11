@@ -212,7 +212,7 @@ def scroll():
 
 
 def clickButtons():
-    buttons = positions(images['go-work'], threshold=ct['go_to_work_btn'])
+    buttons = positions(images['all-go-work'], threshold=ct['go_all_work_btn'])
     # print('buttons: {}'.format(len(buttons)))
     global hero_clicks
 
@@ -220,7 +220,7 @@ def clickButtons():
         moveToWithRandomness(x+(w/2), y+(h/2), 1)
         pyautogui.click()
 
-        hero_clicks += 1
+        hero_clicks = 15
         #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
         if hero_clicks > 20:
             logger('too many hero clicks, try to increase the go_to_work_btn threshold')
@@ -455,20 +455,22 @@ def refreshHeroes():
 
     empty_scrolls_attempts = c['scroll_attemps']
 
-    while(empty_scrolls_attempts > 0):
-        if c['select_heroes_mode'] == 'full':
-            clickFullBarButtons()
-        elif c['select_heroes_mode'] == 'green':
-            clickGreenBarButtons()
-        else:
-            clickButtons()
+    if c['select_heroes_mode'] != 'all':
+        while(empty_scrolls_attempts > 0):
+            if c['select_heroes_mode'] == 'full':
+                clickFullBarButtons()
+            elif c['select_heroes_mode'] == 'green':
+                clickGreenBarButtons()
 
-        sendHeroesHome()
+            sendHeroesHome()
 
-        empty_scrolls_attempts -= 1
+            empty_scrolls_attempts -= 1
 
-        scroll()
-        time.sleep(2)
+            scroll()
+            time.sleep(2)
+
+    if c['select_heroes_mode'] == 'all':
+        clickButtons()
 
     logger('💪 {} heroes sent to work'.format(hero_clicks))
 
