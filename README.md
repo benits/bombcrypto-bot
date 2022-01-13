@@ -77,8 +77,9 @@ python3 index.py
 
 ![run](https://github.com/mpcabete/bombcrypto-bot/raw/main/readme-images/run.png)
 
-
 # Como usar?
+
+Primeiramente, renomeie o arquivo ```config.example.yaml``` para ```config.yaml``` é nesse arquivo que você vai configurar o seu bot
 
 Abra o terminal, se ainda não tiver navegado para a pasta do bot dê novamente o comando
 
@@ -96,22 +97,19 @@ Assim que ele iniciar ele vai começar mandando os bonecos trabalhar. Para que e
 Ele vai constantemente checar se você foi desconectado para realizar o login novamente, e se o botão “new map” tá na tela para clicar nele.
 A cada 15 minutos ele manda todos os heróis taralharem.
 
+Ou 
 
-# Usando docker:
-para rodar bastar ter docker e docker compose instalado e ajustar o - VNC_PASSWORD=COLOCARUMASENHAAQUI. depois docker-compose up -d --build essa image já tem o vnc instalado entao depois que ela rodar entre com o vnc no 127.0.0.1:5900 ,
-tambem é possivel por http http://127.0.0.1:6080 e user root e senha que colocou no docker-compose.
+```
+python3 forever.py
+```
 
+Que colocara automaticamente o bot a executar de forma ininterrupta, assim caso apresente qualquer erro na execução 
+do arquivo ```index.py``` ele logo executa o comando de ```python3 index.py``` novamente.
 
-# HOT TO SEND SCREENSHOTS TO TELEGRAM
+Ou
 
-1. Go to official telegram [BotFather](https://t.me/BotFather/).
-2. Create your bot and copy bot-token (eg. 5021546203:AAHeK199jW25dfvslkOhMzAumzVecSxvVZw )
-3. Open config.yaml in your bot folder and paste bot-token to "telegram_token" 
-4. In config.yaml set "log_telegram" to "True"
-5. Go to [userinfobot](https://t.me/userinfobot) , send "/start" and copy your telegram id
-6. In config.yaml set "telegram_chat_id" to your telegram_id
-7. Go to your telegram bot and send "/start"
-8. Start bot
+Executando o arquivo ``play.bat`` podendo criar atalho do mesmo para assim poder executar o bot 
+sem precisar abrir o terminal ou a própria pasta do bot.
 
 # Send home feature:
 
