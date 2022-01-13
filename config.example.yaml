@@ -9,28 +9,28 @@ time_intervals:
   #
   # [pt_BR] Intervalo de tempo para verificar se há heróis disponíveis para trabalhar
   # Valor padrão (em minutos): 10
-  send_heroes_for_work: 11
+  send_heroes_for_work: 10
 
   # [en_US] Time interval to update heroes position in the map,
   # Default value (in minutes): 3
   #
   # [pt_BR] Intervalo de tempo para atualizar a posição dos heróis no mapa
   # Valor padrão (em minutos): 3
-  refresh_heroes_positions: 4
+  refresh_heroes_positions: 3
 
   # [en_US] Time interval to check for new maps
   # Default value (in minutes): 5
   #
   # [pt_BR] Intervalo de tempo para verificar por novos mapas
   # Valor padrão (em segundos): 5
-  check_for_new_map_button: 4
+  check_for_new_map_button: 2
 
   # [en_US] Time interval to check for captcha.
   # Default value (in minutes): 1
   #
   # [pt_BR] Intervalo de tempo para verificar se precisa resolver o captcha.
   # Valor padrão (em minutos): 1
-  check_for_captcha: 1
+  check_for_captcha: 360
 
   # [en_US] Time interval to check for login request
   # Default value (in minutes): 3
@@ -39,12 +39,19 @@ time_intervals:
   # Valor padrão (em minutos): 5
   check_for_login: 5
 
+  # [en_US] Time interval to check the balance in chest
+  # Default value (in minutes): 60
+  #
+  # [pt_BR] Intervalo de tempo para verificar balance do bau
+  # Valor padrão (em minutos): 60
+  check_for_balance: 60
+
   # [en_US] Time interval between moviments
   # Default value (in seconds): 1
   #
   # [pt_BR] Intervalo de tempo entre movimentos
   # Valor padrão (em segundos): 1
-  interval_between_moviments: 1
+  interval_between_movements: 1
 
 # [en_US] How confident the bot needs to be to click the buttons (values from 0 to 1. 0 is the minimum value, 1 is the maximum value)
 #
@@ -63,7 +70,28 @@ threshold:
   #
   # [pt_BR]
   # Valor padrão: 0.8
-  commom: 0.8
+  common: 0.8
+
+  # [en_US]
+  # Default value: 0.8
+  #
+  # [pt_BR]
+  # Valor padrão: 0.8
+  rare: 0.8
+
+  # [en_US]
+  # Default value: 0.8
+  #
+  # [pt_BR]
+  # Valor padrão: 0.8
+  super_rare: 0.8
+
+  # [en_US]
+  # Default value: 0.8
+  #
+  # [pt_BR]
+  # Valor padrão: 0.8
+  epic: 0.8
 
   # [en_US]
   # Default value: 0.8
@@ -105,7 +133,7 @@ scroll_size: 60
 #
 # [pt_BR]
 # Valor padrão: 3
-scroll_attemps: 3
+scroll_attempts: 3
 
 # [en_US]
 # Default value: true
@@ -144,3 +172,21 @@ select_heroes_mode: "green"
 # Valor padrão : False
 # Opções disponíveis: False ou True
 save_log_to_file: True
+
+# [en_US] Option to send log to telegram chat, you need to set the level, token_api, and chat_id , if u need some help to create bot check out on this WebSite below
+# https://ichi.pro/pt/como-criar-um-bot-do-telegram-e-enviar-mensagens-com-python-84606910593598
+# Default value: disable
+# Available level options:
+#   disable/enable   = disable telegram function
+#
+# [pt_BR] Opção de enviar log para telegrama de chat, você precisa definir o level, token_api e chat_id, se precisar de ajuda para criar o bot confira neste site abaixo
+# https://ichi.pro/pt/como-criar-um-bot-do-telegram-e-enviar-mensagens-com-python-84606910593598
+# Valor padrão : disable
+# Level Opções disponíveis:
+#    disable/enable  = desabilitar função de telegram
+#
+telegram:
+  level: "disable"
+  token_api: "your_bot_token"
+  chat_id: "your_chat_id"
+  notification: True

@@ -23,3 +23,9 @@ __pycache__/
 
 # vscode plugins
 /.history
+
+# Jetbrains IDE
+/.idea
+main.py
+
+config.yaml

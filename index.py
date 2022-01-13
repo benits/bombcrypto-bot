@@ -4,6 +4,7 @@ from cv2 import cv2
 from os import listdir
 from random import randint
 from random import random
+import pygetwindow
 import numpy as np
 import mss
 import pyautogui
@@ -11,12 +12,14 @@ import time
 import sys
 import yaml
 
+from src.telegram import telegram_bot_sendtext, telegram_bot_sendimage
+
 # Load config file.
 stream = open("config.yaml", 'r')
 c = yaml.safe_load(stream)
 ct = c['threshold']
 ch = c['home']
-pause = c['time_intervals']['interval_between_moviments']
+pause = c['time_intervals']['interval_between_movements']
 pyautogui.PAUSE = pause
 
 cat = """
@@ -191,9 +194,16 @@ def positions(target, threshold=ct['default'], img=None):
 
 def scroll():
 
-    commoms = positions(images['commom-text'], threshold=ct['commom'])
+    commoms = positions(images['common-text'], threshold=ct['common'])
     if (len(commoms) == 0):
-        return
+        commoms = positions(images['rare-text'], threshold=ct['rare'])
+        if (len(commoms) == 0):
+            commoms = positions(
+                images['super_rare-text'], threshold=ct['super_rare'])
+            if (len(commoms) == 0):
+                commoms = positions(images['epic-text'], threshold=ct['epic'])
+                if (len(commoms) == 0):
+                    return
     x, y, w, h = commoms[len(commoms)-1]
 #
     moveToWithRandomness(x, y, 1)
@@ -206,17 +216,12 @@ def scroll():
 
 
 def clickButtons():
-    buttons = positions(images['go-work'], threshold=ct['go_to_work_btn'])
-    # print('buttons: {}'.format(len(buttons)))
+    buttons = positions(images['all-go-work'], threshold=ct['go_to_work_btn'])
+
     for (x, y, w, h) in buttons:
         moveToWithRandomness(x+(w/2), y+(h/2), 1)
         pyautogui.click()
-        global hero_clicks
-        hero_clicks = hero_clicks + 1
-        #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
-        if hero_clicks > 20:
-            logger('too many hero clicks, try to increase the go_to_work_btn threshold')
-            return
+
     return len(buttons)
 
 
@@ -274,7 +279,7 @@ def clickGreenBarButtons():
             logger(
                 '⚠️ Too many hero clicks, try to increase the go_to_work_btn threshold')
             return
-        #cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
+        # cv2.rectangle(sct_img, (x, y) , (x + w, y + h), (0,255,255),2)
     return len(not_working_green_bars)
 
 
@@ -296,23 +301,18 @@ def clickFullBarButtons():
         pyautogui.click()
         global hero_clicks
         hero_clicks = hero_clicks + 1
+
     return len(not_working_full_bars)
 
 
 def goToHeroes():
-    select_one = randint(1, 2)
-    global login_attempts
+    if clickBtn(images['go-back-arrow']):
+        global login_attempts
+        login_attempts = 0
 
-    if select_one == 1:
-        if clickBtn(images['go-back-arrow']):
-            login_attempts = 0
-            time.sleep(1)
-            clickBtn(images['hero-icon'])
-    else:
-        if clickBtn(images['up-arrow']):
-            login_attempts = 0
-            time.sleep(1)
-            clickBtn(images['hero-icon-inside-teasure-hunt'])
+    # TODO tirar o sleep quando colocar o pulling
+    time.sleep(1)
+    clickBtn(images['hero-icon'])
     time.sleep(randint(1, 3))
 
 
@@ -321,10 +321,6 @@ def goToGame():
     clickBtn(images['x'])
     # time.sleep(3)
     clickBtn(images['x'])
-
-    clickBtn(images['down-arrow'])
-
-    clickBtn(images['down-arrow'])
 
     clickBtn(images['treasure-hunt-icon'])
 
@@ -339,18 +335,31 @@ def refreshHeroesPositions():
     clickBtn(images['treasure-hunt-icon'])
 
 
-def login():
+def login(name_window):
     global login_attempts
-    logger('😿 Checking if game has disconnected')
+
+    message_bot_check_game_disconnected = '#{} \n\n😿 Checking if game has disconnected'.format(
+        name_window)
+
+    logger(message_bot_check_game_disconnected)
 
     if login_attempts > 3:
-        logger('🔃 Too many login attempts, refreshing')
+        message_login_attempts = '🔃 Too many login attempts, refreshing'
+
+        logger(message_login_attempts)
+        telegram_bot_sendtext(message_login_attempts)
+
         login_attempts = 0
         pyautogui.hotkey('ctrl', 'f5')
         return
 
     if clickBtn(images['connect-wallet'], timeout=10):
-        logger('🎉 Connect wallet button detected, logging in!')
+        message_connect_wallet = '#{} \n\n🎉 Connect wallet button detected, logging in!'.format(
+            name_window)
+
+        logger(message_connect_wallet)
+        telegram_bot_sendtext(message_connect_wallet)
+
         login_attempts = login_attempts + 1
         # TODO mto ele da erro e poco o botao n abre
         # time.sleep(10)
@@ -359,30 +368,33 @@ def login():
         # sometimes the sign popup appears imediately
         login_attempts = login_attempts + 1
         # print('sign button clicked')
+        message_connect_metamask = '#{} \n\n🎉 Metamask signed successfully!'.format(
+            name_window)
+        telegram_bot_sendtext(message_connect_metamask)
+
         # print('{} login attempt'.format(login_attempts))
         if clickBtn(images['treasure-hunt-icon'], timeout=15):
+            message_entered_treasure = '#{} \n\n🎉 Sucessfully login, entered treasure hunt mode!'.format(
+                name_window)
+            telegram_bot_sendtext(message_entered_treasure)
             # print('sucessfully login, treasure hunt btn clicked')
             login_attempts = 0
         return
         # click ok button
-
-    if not clickBtn(images['select-wallet-1-no-hover'], ):
-        if clickBtn(images['select-wallet-1-hover'], threshold=ct['select_wallet_buttons']):
-            pass
-            # o ideal era que ele alternasse entre checar cada um dos 2 por um tempo
-            # print('sleep in case there is no metamask text removed')
-            # time.sleep(20)
-    else:
-        pass
-        # print('sleep in case there is no metamask text removed')
-        # time.sleep(20)
 
     if clickBtn(images['select-wallet-2'], timeout=20):
         login_attempts = login_attempts + 1
         # print('sign button clicked')
         # print('{} login attempt'.format(login_attempts))
         # time.sleep(25)
+        message_connect_metamask = '#{} \n\n🎉 Metamask signed successfully!'.format(
+            name_window)
+        telegram_bot_sendtext(message_connect_metamask)
+
         if clickBtn(images['treasure-hunt-icon'], timeout=25):
+            message_entered_treasure = '#{} \n\n🎉 Sucessfully login, entered treasure hunt mode!'.format(
+                name_window)
+            telegram_bot_sendtext(message_entered_treasure)
             # print('sucessfully login, treasure hunt btn clicked')
             login_attempts = 0
         # time.sleep(15)
@@ -430,38 +442,85 @@ def sendHeroesHome():
             print('hero already home, or home full(no dark home button)')
 
 
-def refreshHeroes():
-    logger('🏢 Search for heroes to work')
+def sendBalance(name_window):
+    logger('\n Taking screenshot balance')
+
+    if clickBtn(images['balance'], timeout=10, threshold=0.8):
+        time.sleep(3)
+        myScreenshot = pyautogui.screenshot()
+        myScreenshot.save(r'screenshots/screen.png')
+        photo = open('screenshots/screen.png', 'rb')
+
+        telegram_bot_sendtext(
+            "#{} \n\n📈 BOMBCRYPTO BALANCE".format(name_window))
+        time.sleep(1)
+        telegram_bot_sendimage(photo)
+
+        time.sleep(2)
+
+        clickBtn(images['x'])
+
+
+def refreshHeroes(name_window):
+    message_bot_search_heroes = '#{} \n\n🏢 Search for heroes to work'.format(
+        name_window)
+    telegram_bot_sendtext(message_bot_search_heroes)
+
+    logger(message_bot_search_heroes)
 
     goToHeroes()
 
     if c['select_heroes_mode'] == "full":
-        logger('⚒️ Sending heroes with full stamina bar to work', 'green')
+        message_bot_sending_full = '#{} \n\n⚒️ Sending heroes with full stamina bar to work'.format(
+            name_window)
+        telegram_bot_sendtext(message_bot_sending_full)
+
+        logger(message_bot_sending_full)
     elif c['select_heroes_mode'] == "green":
-        logger('⚒️ Sending heroes with green stamina bar to work', 'green')
+        message_bot_sending_green = '#{} \n\n⚒️ Sending heroes with green stamina bar to work'.format(
+            name_window)
+        telegram_bot_sendtext(message_bot_sending_green)
+
+        logger(message_bot_sending_green)
     else:
-        logger('⚒️ Sending all heroes to work', 'green')
+        message_bot_sending_all = '#{} \n\n⚒️ Sending all heroes to work'.format(
+            name_window)
+        telegram_bot_sendtext(message_bot_sending_all)
 
-    buttonsClicked = 1
-    empty_scrolls_attempts = c['scroll_attemps']
+        logger(message_bot_sending_all)
 
-    while(empty_scrolls_attempts > 0):
-        if c['select_heroes_mode'] == 'full':
-            buttonsClicked = clickFullBarButtons()
-        elif c['select_heroes_mode'] == 'green':
-            buttonsClicked = clickGreenBarButtons()
-        else:
-            buttonsClicked = clickButtons()
+    empty_scrolls_attempts = c['scroll_attempts']
 
-        sendHeroesHome()
+    if c['select_heroes_mode'] != "all":
+        while(empty_scrolls_attempts > 0):
+            if c['select_heroes_mode'] == 'full':
+                clickFullBarButtons()
+            elif c['select_heroes_mode'] == 'green':
+                clickGreenBarButtons()
 
-        if buttonsClicked == 0:
+            sendHeroesHome()
+
             empty_scrolls_attempts -= 1
 
-        scroll()
+            scroll()
+            time.sleep(2)
+
+            message_bot_heroes_sent_to_work = '#{} \n\n💪 {} heroes sent to work'.format(
+                name_window, hero_clicks)
+            telegram_bot_sendtext(message_bot_heroes_sent_to_work)
+
+            logger(message_bot_heroes_sent_to_work)
+    else:
+        clickButtons()
+
         time.sleep(2)
 
-    logger('💪 {} heroes sent to work'.format(hero_clicks))
+        message_bot_heroes_sent_to_work = '#{} \n\n💪 All heroes was sended to work'.format(
+            name_window)
+        telegram_bot_sendtext(message_bot_heroes_sent_to_work)
+
+        logger(message_bot_heroes_sent_to_work)
+
     goToGame()
 
 
@@ -489,46 +548,88 @@ def main():
     time.sleep(7)
     t = c['time_intervals']
 
-    last = {
-        "login": 0,
-        "heroes": 0,
-        "new_map": 0,
-        "check_for_captcha": 0,
-        "refresh_heroes": 0
-    }
-    # =========
+    global windows
+    windows = []
 
-    while True:
-        now = time.time()
+    #  Aqui ele percorre as janelas que estiver escrito bombcrypto
+    for window in pygetwindow.getWindowsWithTitle('bombcrypto'):
+        if (window.title.count('bombcrypto-bot') >= 1):
+            continue
 
-        if now - last["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
-            last["check_for_captcha"] = now
+        windows.append({
+            "window": window,
+            "login": 0,
+            "heroes": 0,
+            "new_map": 0,
+            "check_for_captcha": 0,
+            "refresh_heroes": 0,
+            "balance": 0
+        })
 
-        if now - last["heroes"] > addRandomness(t['send_heroes_for_work'] * 60):
-            last["heroes"] = now
-            refreshHeroes()
+    quantity_windows_opened = len(windows)
+    message_bot_started = '#BOT BOMBCRYPTO\n\n {} BombCrypto Detected.\n\n 🚀 Started bot successfully'.format(
+        quantity_windows_opened)
 
-        if now - last["login"] > addRandomness(t['check_for_login'] * 60):
-            sys.stdout.flush()
-            last["login"] = now
-            login()
+    telegram_bot_sendtext(message_bot_started)
 
-        if now - last["new_map"] > t['check_for_new_map_button']:
-            last["new_map"] = now
+    if len(windows) >= 1:
+        print('>>---> %d windows with the name bombcrypto were found' %
+              len(windows))
 
-            if clickBtn(images['new-map']):
-                loggerMapClicked()
+        while True:
+            for currentWindow in windows:
+                currentWindow["window"].activate()
+                if currentWindow["window"].isMaximized == False:
+                    currentWindow["window"].maximize()
 
-        if now - last["refresh_heroes"] > addRandomness(t['refresh_heroes_positions'] * 60):
-            last["refresh_heroes"] = now
-            refreshHeroesPositions()
+                print('>>---> Current window: %s' %
+                      currentWindow["window"].title)
 
-        # clickBtn(teasureHunt)
-        logger(None, progress_indicator=True)
+                time.sleep(2)
+                now = time.time()
 
-        sys.stdout.flush()
+                if clickBtn(images['ok_team_viewer'], timeout=5):
+                    pass
 
-        time.sleep(1)
+                if now - currentWindow["balance"] > 60 * 60:
+                    sys.stdout.flush()
+                    currentWindow["balance"] = now
+                    sendBalance(currentWindow["window"].title)
+                    logger("\n")
+
+                if now - currentWindow["login"] > addRandomness(t['check_for_login'] * 60):
+                    sys.stdout.flush()
+                    currentWindow["login"] = now
+                    login(currentWindow["window"].title)
+
+                if now - currentWindow["check_for_captcha"] > addRandomness(t['check_for_captcha'] * 60):
+                    currentWindow["check_for_captcha"] = now
+
+                if now - currentWindow["heroes"] > addRandomness(t['send_heroes_for_work'] * 60):
+                    currentWindow["heroes"] = now
+                    refreshHeroes(currentWindow["window"].title)
+
+                if now - currentWindow["new_map"] > t['check_for_new_map_button']:
+                    currentWindow["new_map"] = now
+
+                    if clickBtn(images['new-map']):
+                        loggerMapClicked(currentWindow["window"].title)
+
+                if now - currentWindow["refresh_heroes"] > addRandomness(t['refresh_heroes_positions'] * 60):
+                    currentWindow["refresh_heroes"] = now
+                    refreshHeroesPositions()
+
+                # clickBtn(teasureHunt)
+                logger(None, progress_indicator=True)
+
+                sys.stdout.flush()
+
+                time.sleep(1)
+    else:
+        print('>>---> No window with the name bombcrypto was found')
+
+        message_bot_fail = '😥 >>---> No window with the name bombcrypto was found'
+        telegram_bot_sendtext(message_bot_fail)
 
 
 if __name__ == '__main__':

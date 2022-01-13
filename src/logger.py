@@ -3,6 +3,8 @@ from src.date import dateFormatted
 import sys
 import yaml
 
+from telegram import telegram_bot_sendtext
+
 
 stream = open("./config.yaml", 'r')
 c = yaml.safe_load(stream)
@@ -22,20 +24,22 @@ COLOR = {
     'red': '\033[91m'
 }
 
-def logger(message, progress_indicator = False, color = 'default'):
+
+def logger(message, progress_indicator=False, color='default'):
     global last_log_is_progress
     color_formatted = COLOR.get(color.lower(), COLOR['default'])
 
     formatted_datetime = dateFormatted()
     formatted_message = "[{}] => {}".format(formatted_datetime, message)
-    formatted_message_colored  = color_formatted + formatted_message + '\033[0m'
+    formatted_message_colored = color_formatted + formatted_message + '\033[0m'
 
-    
     # Start progress indicator and append dots to in subsequent progress calls
     if progress_indicator:
         if not last_log_is_progress:
             last_log_is_progress = True
-            formatted_message = color_formatted + "[{}] => {}".format(formatted_datetime, '⬆️ Processing last action..')
+            formatted_message = color_formatted + \
+                "[{}] => {}".format(formatted_datetime,
+                                    '⬆️ Processing last action..')
             sys.stdout.write(formatted_message)
             sys.stdout.flush()
         else:
@@ -46,7 +50,7 @@ def logger(message, progress_indicator = False, color = 'default'):
     if last_log_is_progress:
         sys.stdout.write('\n')
         sys.stdout.flush()
-        last_log_is_progress = False    
+        last_log_is_progress = False
 
     print(formatted_message_colored)
 
@@ -57,8 +61,16 @@ def logger(message, progress_indicator = False, color = 'default'):
 
     return True
 
-def loggerMapClicked():
-  logger('🗺️ New Map button clicked!')
-  logger_file = open("./logs/new-map.log", "a", encoding='utf-8')
-  logger_file.write(dateFormatted() + '\n')
-  logger_file.close()
+
+def loggerMapClicked(name_window):
+
+    message_bot_map_clicked = '#{} \n\n🗺️ >>---> New Map button clicked!'.format(
+        name_window)
+
+    logger(message_bot_map_clicked)
+    telegram_bot_sendtext(message_bot_map_clicked)
+
+    logger_file = open("./logs/new-map.log", "a", encoding='utf-8')
+    logger_file.write(dateFormatted() + '\n')
+
+    logger_file.close()
