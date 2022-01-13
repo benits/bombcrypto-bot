@@ -28,6 +28,6 @@ __pycache__/
 /.idea
 main.py
 
-screenshots
+**/screen.png
 
 config.yaml
