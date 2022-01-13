@@ -3,6 +3,8 @@ from src.date import dateFormatted
 import sys
 import yaml
 
+from src.telegram import telegram_bot_sendtext
+
 
 stream = open("./config.yaml", 'r')
 c = yaml.safe_load(stream)
@@ -60,10 +62,15 @@ def logger(message, progress_indicator=False, color='default'):
     return True
 
 
-def loggerMapClicked(bot, account_id, message):
-    logger('🗺️ New Map button clicked!')
-    bot.send_message(c["telegram_chat_id"], "BOMBCRYPTO " +
-                     account_id + message)
+def loggerMapClicked(name_window):
+
+    message_bot_map_clicked = '#{} \n\n🗺️ >>---> New Map button clicked!'.format(
+        name_window)
+
+    logger(message_bot_map_clicked)
+    telegram_bot_sendtext(message_bot_map_clicked)
+
     logger_file = open("./logs/new-map.log", "a", encoding='utf-8')
     logger_file.write(dateFormatted() + '\n')
+
     logger_file.close()
