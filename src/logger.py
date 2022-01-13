@@ -3,7 +3,7 @@ from src.date import dateFormatted
 import sys
 import yaml
 
-from src.telegram import telegram_bot_sendtext
+from telegram import telegram_bot_sendtext
 
 
 stream = open("./config.yaml", 'r')
