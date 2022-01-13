@@ -340,7 +340,6 @@ def login(name_window):
 
     message_bot_check_game_disconnected = '#{} \n\n😿 Checking if game has disconnected'.format(
         name_window)
-    telegram_bot_sendtext(message_bot_check_game_disconnected)
 
     logger(message_bot_check_game_disconnected)
 
